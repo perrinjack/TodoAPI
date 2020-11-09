@@ -20,11 +20,25 @@ namespace TodoApi.Controllers
             _context = context;
         }
 
-        // GET: api/TodoItems
+        // GET: api/TodoItems Return all items
         [HttpGet]
         public async Task<ActionResult<IEnumerable<TodoItem>>> GetTodoItems()
         {
             return await _context.TodoItems.ToListAsync();
+        }
+
+        // GET: api/TodoItems return items dependent on isCOmplete boolean value. 
+
+        [HttpGet("venue/{location}")]
+        public async Task<ActionResult<IEnumerable<TodoItem>>> GetTodoItems(bool isComplete, string location)
+        {
+            if (location == "home")
+            {
+                return await _context.TodoItems.Where(p => p.IsComplete == true).ToListAsync();
+            }
+            return BadRequest();
+
+
         }
 
         // GET: api/TodoItems/5
@@ -38,8 +52,16 @@ namespace TodoApi.Controllers
                 return NotFound();
             }
 
-            return todoItem;
+            if (todoItem.Name == "Luton")
+            {
+                return todoItem;
+            }
+            return BadRequest();
+
         }
+
+
+
 
         // PUT: api/TodoItems/5
         // To protect from overposting attacks, enable the specific properties you want to bind to, for
@@ -47,7 +69,30 @@ namespace TodoApi.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutTodoItem(long id, TodoItem todoItem)
         {
-            return BadRequest();
+            if (id != todoItem.Id)
+            {
+                return BadRequest();
+            }
+
+            _context.Entry(todoItem).State = EntityState.Modified;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!TodoItemExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return NoContent();
         }
 
         // POST: api/TodoItems
@@ -66,7 +111,16 @@ namespace TodoApi.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult<TodoItem>> DeleteTodoItem(long id)
         {
-            return BadRequest();
+            var todoItem = await _context.TodoItems.FindAsync(id);
+            if (todoItem == null)
+            {
+                return NotFound();
+            }
+
+            _context.TodoItems.Remove(todoItem);
+            await _context.SaveChangesAsync();
+
+            return todoItem;
         }
 
         private bool TodoItemExists(long id)
