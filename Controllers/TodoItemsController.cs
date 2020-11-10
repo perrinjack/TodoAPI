@@ -27,19 +27,6 @@ namespace TodoApi.Controllers
             return await _context.TodoItems.ToListAsync();
         }
 
-        // GET: api/TodoItems return items dependent on isCOmplete boolean value. 
-
-        [HttpGet("venue/{location}")]
-        public async Task<ActionResult<IEnumerable<TodoItem>>> GetTodoItems(bool isComplete, string location)
-        {
-            if (location == "home")
-            {
-                return await _context.TodoItems.Where(p => p.IsComplete == true).ToListAsync();
-            }
-            return BadRequest();
-
-
-        }
 
         // GET: api/TodoItems/5
         [HttpGet("{id}")]
